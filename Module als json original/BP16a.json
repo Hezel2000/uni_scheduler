@@ -1,0 +1,42 @@
+{
+    "Modul-Code": "BP16a",
+    "Modul-Name-en": "Introduction to Physics A1 for Minors",
+    "Modul-Name-de": "Einführung in die Physik A1 für Nebenfachstudierende",
+    "Modul-Typ": "Pflichtmodul (Importmodul NFPHY-VA1S)",
+    "Anzhal CP und Arbeitsaufwand": "6 CP (insg.) = 180 h",
+    "Anzahl SWS": "4 SWS",
+    "Kontaktstudium": "4 SWS / 60 h",
+    "Selbststudium": "120 h",
+    "Inhalte": "Mechanik: Grundbegriffe der Physik, Bezugssysteme, Bewegung von Punkten, Newton'sche Axiome, Impuls, Reibungskräfte, Gravitation, Arbeit, Leistung und Energie, Stoßgesetze, Schwingungen, Drehbewegungen, Thermodynamik: Hauptsätze, Carnot-Maschine, Wirkungsgrad, Zustandsgrößen, Phasen und Phasenübergänge, Wärmeleitung, Diffusion, ideales Gas, barometrische Höhenformel, van-der-Waals-Gas, Wärme als Teilchenbewegung, Freiheitsgrade, Maxwell-Boltzmann-Verteilung, Wahrscheinlichkeit und Entropie",
+    "Lernergebnisse / Kompetenzziele": "Die Mechanik ist eine grundlegende Teildisziplin der Physik und wirkt mit ihren Grundbegriffen und Prinzipien in jedes andere Teilgebiet der Physik hinein. In der Thermodynamik werden Begriffe für die Beschreibung von Zuständen und Zustandsänderungen makroskopischer Systeme entwickelt, die dann mit den mikroskopischen Eigenschaften der Systeme (Bewegungen und Wechselwirkungen der Teilchen) in Verbindung gebracht werden. Die in der Vorlesung vermittelten Inhalte werden in den Übungen angewendet. Die Studierenden sind anschließend in der Lage, entsprechende Problemstellungen selbständig zu analysieren und zu lösen.",
+    "Teilnahmevoraussetzungen für Modul bzw. für einzelne Lehrveranstaltungen des Moduls": "keine",
+    "Empfohlene Voraussetzungen": "keine",
+    "Organisatorische Hinweise": "Die Organisation der Übung erfolgt online über OLAT.\n Zur Klausur ist eine Anmeldung erforderlich. Der Klausurtermin wird im LSF und durch Aushang am Prüfungsamt des FB Physik bekanntgegeben. Die Anmeldung zur Klausur erfolgt online über QIS. Die Anmeldefrist endet eine Woche vor dem Klausurtermin, die Rücktrittsfrist endet einen Tag vor dem Klausurtermin.",
+    "Zuordnung des Moduls (Studiengang / Fachbereich)": "BSc Physik / FB Physik",
+    "Verwendbarkeit des Moduls für andere Studiengänge": "BSc Geowissenschaften, BSc Geographie, BSc Informatik",
+    "Häufigkeit des Angebots": "jährlich",
+    "Dauer des Moduls": "1 Semester",
+    "Modulbeauftragte / Modulbeauftragter": "Prof. Dr. Cornelius Krellner",
+    "Studiennachweise/ ggf. als Prüfungsvorleistungen": {
+        "Teilnahmenachweise": "regelmäßige Teilnahme an den Übungen",
+        "Leistungsnachweise": "erfolgreiche Bearbeitung von Übungsaufgaben oder Bestehen von Tests, Bestehen einer Klausur (120 Min.)"
+    },
+    "Lehr- / Lernformen": "Vorlesung, Übung",
+    "Unterrichts- / Prüfungssprache": "Deutsch",
+    "Modulprüfung": {
+        "Modulabschlussprüfung bestehend aus": "",
+        "kumulative Modulprüfung bestehend aus": "",
+        "Bildung der Modulnote bei kumulativen Modulprüfungen": ""
+    },
+    "Semester-Tabelle": [
+        [ "Einführung in die Physik A1 für Nebenfachstudierende", "V+Ü", "3+1", 6, "X", "", "", "", "", "" ],
+        [ "Summe", "", 4, 6, "", "", "", "", "", "" ]
+    ],
+    "Bemerkungen": "keine",
+    "Version": [
+        "2024-07-10"
+    ],
+    "Änderung": {
+        "2024-07-10": "Bestehen der Klausur (120 min) ist ab sofort eine Studienleistung und keine Prüfungsleistung mehr."        
+    }
+}

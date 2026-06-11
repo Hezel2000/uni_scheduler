@@ -1,0 +1,45 @@
+{
+    "Modul-Code": "MWp Gph2",
+    "Modul-Name-en": "Geophysics 2",
+    "Modul-Name-de": "Geophysik 2",
+    "Modul-Typ": "Wahlpflichtmodul",
+    "Anzhal CP und Arbeitsaufwand": "8 CP (insg.) = 240 h",
+    "Anzahl SWS": "6 SWS",
+    "Kontaktstudium": "6 SWS / 90 h",
+    "Selbststudium": "150 h",
+    "Inhalte": "Das Modul Geophysik 2 umfasst Vorlesungen und Übungen aus den Bereichen Seismologie, Geodynamik und Angewandte Methoden. In der Seismologie geht es um grundlegende Verfahren der rechnergestützten Seismogrammanalyse und -bearbeitung. In der Geodynamik steht die Dynamik der Lithosphäre im Vordergrund und umfasst plattentektonische Prozesse wie Gebirgsbildung, Rifting, Subduktion, Erosion und Sedimentation. In der Angewandten Geophysik wird die praxisnahe Durchführung potentialtheoretischer Verfahren zur Abschätzung der räumlichen Verteilung der isotropen und anisotropen elektrischen Leitfähigkeit des oberflächennahen Untergrunds behandelt.",
+    "Lernergebnisse / Kompetenzziele": "Die Lernziele beziehen sich auf fortgeschrittene Anwendung von Methoden aus den geophysikalischen Fachgebieten Seismologie, Geodynamik und Angewandter Geophysik\n* Die Studierenden geben wieder, was sie gelernt haben\n* Sie erklären die Zusammenhänge anhand von Formeln und Graphen.\n* Sie wenden die erworbenen Fähigkeiten auf neue Sachverhalte an\n* Physikalische Modellvorstellungen werden formuliert, quantifiziert und anhand von Fallstudien analysiert\n* Verschiedene Modellvorstellungen werden kombiniert und in den geowissenschaftlichen Zusammenhang mit Nachbardisziplinen gebracht\n* Ergebnisse werden kritisch betrachtet, beurteilt und auf ihre Zweckmäßigkeit hin überprüft",
+    "Teilnahmevoraussetzungen für Modul bzw. für einzelne Lehrveranstaltungen des Moduls": "keine",
+    "Empfohlene Voraussetzungen": "keine",
+    "Organisatorische Hinweise": "In dem Modul sind 2 Lehrveranstaltungen im Umfang von 8 CP auszuwählen.",
+    "Zuordnung des Moduls (Studiengang / Fachbereich)": "M.Sc. Geowissenschaften / FB11",
+    "Verwendbarkeit des Moduls für andere Studiengänge": "B.Sc./M.Sc. Mathematik, Physik",
+    "Häufigkeit des Angebots": "Jährlich (2 von 3 Veranstaltungen)",
+    "Dauer des Moduls": "1 Semester",
+    "Modulbeauftragte / Modulbeauftragter": "Prof. Dr. Georg Rümpker",
+    "Studiennachweise/ ggf. als Prüfungsvorleistungen": {
+        "Teilnahmenachweise": "Aktive Teilnahme an den Übungen",
+        "Leistungsnachweise": "Erfolgreich absolvierte Übungen"
+    },
+    "Lehr- / Lernformen": "Vorlesung, Übung",
+    "Unterrichts- / Prüfungssprache": "Deutsch",
+    "Modulprüfung": {
+        "Modulabschlussprüfung bestehend aus": "Mündl. Prüfung (ca. 60 min) oder Klausur (90 min)",
+        "kumulative Modulprüfung bestehend aus": "",
+        "Bildung der Modulnote bei kumulativen Modulprüfungen": ""
+    },
+    "Semester-Tabelle": [
+        [ "Seismologie 2 für Fortgeschrittene: Datenanalyse und Signalverarbeitung", "V+Ü", "2+1", 4, "", "X", "", "" ],
+        [ "Geodynamik 2 für Fortgeschrittene: Dynamik der Lithosphäre", "V+Ü", "2+1", 4, "", "X", "", "" ],
+        [ "Angewandte Methoden 2 für Fortgeschrittene: Geoelektrik", "V+Ü", "2+1", 4, "", "X", "", "" ],
+        [ "Modulprüfung", "Klausur", "", "", "", "", "", "" ],
+        [ "Summe", "", 6, 8, "", "", "", "" ]
+    ],
+    "Bemerkungen": "keine",
+    "Version": [
+        "2025-01-06"
+    ],
+    "Änderung": {
+        "2025-01-06": "Bereitstellung"
+    }
+}

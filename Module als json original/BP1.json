@@ -29,54 +29,10 @@
         "Bildung der Modulnote bei kumulativen Modulprüfungen": ""
     },
     "Semester-Tabelle": [
-        [
-            "System Erde",
-            "V+Ü",
-            4,
-            5,
-            "X",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-        [
-            "Geländeübung",
-            "GÜ",
-            "5 Tage",
-            2,
-            "",
-            "X",
-            "",
-            "",
-            "",
-            ""
-        ],
-        [
-            "Modulprüfung",
-            "Klausur",
-            "",
-            "",
-            "X",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ],
-        [
-            "Summe",
-            "",
-            "4 SWS + 5 Tage",
-            7,
-            "",
-            "",
-            "",
-            "",
-            "",
-            ""
-        ]
+        ["System Erde", "V+Ü", 4, 5, "X", "", "", "", "", ""],
+        ["Geländeübung", "GÜ", "5 Tage", 2, "", "X", "", "", "", ""],
+        ["Modulprüfung", "Klausur", "", "", "X", "", "", "", "", ""],
+        ["Summe", "", "4 SWS + 5 Tage", 7, "", "", "", "", "", ""]
     ],
     "Bemerkungen": "keine",
     "Version": [

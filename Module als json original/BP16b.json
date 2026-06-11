@@ -1,0 +1,42 @@
+{
+    "Modul-Code": "BP16b",
+    "Modul-Name-en": "Introduction to Physics A2 for Minors",
+    "Modul-Name-de": "Einführung in die Physik A2 für Nebenfachstudierende",
+    "Modul-Typ": "Pflichtmodul (Importmodul NFPHY-VA2)",
+    "Anzhal CP und Arbeitsaufwand": "6 CP (insg.) = 180 h",
+    "Anzahl SWS": "4 SWS",
+    "Kontaktstudium": "4 SWS / 60 h",
+    "Selbststudium": "120 h",
+    "Inhalte": "Elektrodynamik: Coulomb-Gesetz, elektrisches Feld, Potential, Spannung, Arbeit, Leistung, Materie im E-Feld, Kapazität, Energie des E-Felds, Strom, Widerstand, Magnetfeld, Biot-Savart'sches Gesetz, Materie im B-Feld, magnetische Kraft, Hall-Effekt, Faraday'sches Induktionsgesetz, Induktivität, Energie des B-Felds, Elektromotor, Generator, Transformator, Wechselstromkreise, Maxwell-Gleichungen, elektromagnetische Wellen\nOptik: Reflexions- und Brechungsgesetz, Linsentypen, Linsenschleiferformel, Abbildungsgleichung, optische Instrumente (insbesondere Teleskop und Mikroskop), Dispersion, Huygens'sches Prinzip, Beugung und Interferenz, Auflösung von Teleskop und Mikroskop, Kohärenz, Polarisation",
+    "Lernergebnisse / Kompetenzziele": "Kenntnisse der Elektrodynamik sind unerlässlich, um die maßgeblich von elektrischen und magnetischen Kräften geprägten Eigenschaften von Materie zu verstehen. Die Optik befasst sich mit der Ausbreitung von Wellen (insbesondere von elektromagnetischen Wellen) und deren Wechselwirkung mit Materie. In der Vorlesung steht dabei das Verständnis von Abbildungsprozessen im Vordergrund. Die in der Vorlesung vermittelten Inhalte werden in den Übungen angewendet. Die Studierenden sind anschließend in der Lage, entsprechende Problemstellungen selbständig zu analysieren und zu lösen.",
+    "Teilnahmevoraussetzungen für Modul bzw. für einzelne Lehrveranstaltungen des Moduls": "keine",
+    "Empfohlene Voraussetzungen": "Inhalt des Moduls BP16a „Einführung in die Physik A1 für Nebenfachstudierende“ (NFPHY-VA1).",
+    "Organisatorische Hinweise": "Die Organisation der Übung erfolgt online über OLAT.\n Zur Klausur ist eine Anmeldung erforderlich. Der Klausurtermin wird im LSF und durch Aushang am Prüfungsamt des FB Physik bekanntgegeben. Die Anmeldung zur Klausur erfolgt online über QIS. Die Anmeldefrist endet eine Woche vor dem Klausurtermin, die Rücktrittsfrist endet einen Tag vor dem Klausurtermin.",
+    "Zuordnung des Moduls (Studiengang / Fachbereich)": "BSc Physik / FB Physik",
+    "Verwendbarkeit des Moduls für andere Studiengänge": "B.Sc. Geowissenschaften, BSc Informatik",
+    "Häufigkeit des Angebots": "jährlich im SoSe",
+    "Dauer des Moduls": "einsemestrig",
+    "Modulbeauftragte / Modulbeauftragter": "Prof. Dr. Cornelius Krellner",
+    "Studiennachweise/ ggf. als Prüfungsvorleistungen": {
+        "Teilnahmenachweise": "Regelmäßige Teilnahme an den Übungen",
+        "Leistungsnachweise": "erfolgreiche Bearbeitung von Übungsaufgaben\n oder\n Bestehen von Tests\n Prüfungsvorleistungen: Erbringen aller Leistungsnachweise"
+    },
+    "Lehr- / Lernformen": "Vorlesung, Übung",
+    "Unterrichts- / Prüfungssprache": "Deutsch",
+    "Modulprüfung": {
+        "Modulabschlussprüfung bestehend aus": "Klausur (120 Min.)",
+        "kumulative Modulprüfung bestehend aus": "",
+        "Bildung der Modulnote bei kumulativen Modulprüfungen": ""
+    },
+    "Semester-Tabelle": [
+        [ "Einführung in die Physik A2 für Nebenfachstudierende", "V+Ü", "3+1", 6, "", "X", "", "", "", "" ],
+        [ "Summe", "", 4, 6, "", "", "", "", "", "" ]
+    ],
+    "Bemerkungen": "keine",
+    "Version": [
+        "2025-01-06"
+    ],
+    "Änderung": {
+        "2025-01-06": "Bereitstellung"
+    }
+}
