@@ -460,11 +460,39 @@ with bsc_plan_tab:
     courses = courses[courses["code"].astype(str).str.startswith("B")].copy()
     courses = courses[["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]]
 
+    # Keep an unsaved working copy so modules can move between both tables immediately.
+    working_key = "bsc_working_plan_df"
+    working_plan_key = "bsc_working_plan_name"
+
+    if (
+        working_key not in st.session_state
+        or st.session_state.get(working_plan_key) != st.session_state["active_plan"]
+    ):
+        st.session_state[working_key] = courses.copy()
+        st.session_state[working_plan_key] = st.session_state["active_plan"]
+    else:
+        # Keep module metadata current, but preserve unsaved semester/type choices.
+        saved_choices = st.session_state[working_key][["code", "semester", "selected_type"]].copy()
+        st.session_state[working_key] = courses.drop(columns=["semester", "selected_type"]).merge(
+            saved_choices,
+            on="code",
+            how="left",
+        )
+        st.session_state[working_key]["semester"] = st.session_state[working_key]["semester"].fillna("Unplanned")
+        st.session_state[working_key]["selected_type"] = st.session_state[working_key]["selected_type"].fillna(
+            st.session_state[working_key]["type"].apply(default_selected_type_from_module_type)
+        )
+        st.session_state[working_key] = st.session_state[working_key][
+            ["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]
+        ]
+
+    working_courses = st.session_state[working_key].copy()
+
     left_col, right_col = st.columns(2)
 
     with left_col:
         st.markdown("### Not yet in plan")
-        unplanned_courses = courses[courses["semester"] == "Unplanned"]
+        unplanned_courses = working_courses[working_courses["semester"] == "Unplanned"]
         edited_unplanned_courses = st.data_editor(
             unplanned_courses,
             column_config={
@@ -485,7 +513,7 @@ with bsc_plan_tab:
 
     with right_col:
         st.markdown("### Already in plan")
-        planned_courses = courses[courses["semester"] != "Unplanned"]
+        planned_courses = working_courses[working_courses["semester"] != "Unplanned"]
         edited_planned_courses = st.data_editor(
             planned_courses,
             column_config={
@@ -493,7 +521,7 @@ with bsc_plan_tab:
                 "course": st.column_config.TextColumn("Course"),
                 "cp": st.column_config.NumberColumn("CP", format="%d"),
                 "sws": st.column_config.NumberColumn("SWS", format="%d"),
-                "semester": st.column_config.SelectboxColumn("Semester", options=["1", "2", "3", "4", "5", "6"]),
+                "semester": st.column_config.SelectboxColumn("Semester", options=SEMESTERS_ALL),
                 "selected_type": st.column_config.SelectboxColumn("Selected type", options=MODULE_TYPES),
                 "type": st.column_config.TextColumn("Type"),
                 "responsible": st.column_config.TextColumn("Responsible"),
@@ -501,9 +529,18 @@ with bsc_plan_tab:
             disabled=["code", "course", "cp", "sws", "type", "responsible"],
             hide_index=True,
             use_container_width=True,
+            key="planned_courses_editor",
         )
 
     edited = pd.concat([edited_planned_courses, edited_unplanned_courses], ignore_index=True)
+    edited = edited[["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]]
+
+    old_state = st.session_state[working_key].sort_values("code").reset_index(drop=True)
+    new_state = edited.sort_values("code").reset_index(drop=True)
+
+    if not old_state.equals(new_state):
+        st.session_state[working_key] = edited.copy()
+        st.rerun()
 
     safe_name = clean_plan_name(new_plan_name)
     plan_will_overwrite = safe_name != "" and plan_path(safe_name).exists()
