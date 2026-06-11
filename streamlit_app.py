@@ -515,4 +515,153 @@ with bsc_plan_tab:
 
 with add_module_tab:
     st.subheader("Add Module")
-    st.info("This tab will later be used to add modules to the plan.")
+    st.write("Create a new module JSON file with the same basic structure as the existing module files.")
+
+    with st.form("add_module_form"):
+        st.markdown("### Basic information")
+        col1, col2, col3 = st.columns(3)
+
+        with col1:
+            modul_code = st.text_input("Modul-Code", placeholder="e.g. BP99")
+            modul_typ = st.selectbox(
+                "Modul-Typ",
+                options=["Pflichtmodul", "Wahlpflichtmodul", "Importmodul"]
+            )
+            cp = st.number_input("CP", min_value=0, step=1, value=6)
+
+        with col2:
+            modul_name_de = st.text_input("Modul-Name-de")
+            anzahl_sws = st.number_input("Anzahl SWS", min_value=0, step=1, value=4)
+            haeufigkeit = st.text_input("Häufigkeit des Angebots", value="jährlich")
+
+        with col3:
+            modul_name_en = st.text_input("Modul-Name-en")
+            dauer = st.text_input("Dauer des Moduls", value="1 Semester")
+            version = st.text_input("Version", value="2025-01-06")
+
+        st.markdown("### Workload")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            arbeitsaufwand = st.number_input("Arbeitsaufwand in Stunden", min_value=0, step=30, value=int(cp * 30))
+        with col2:
+            kontaktstudium = st.text_input("Kontaktstudium", value=f"{anzahl_sws} SWS")
+        with col3:
+            selbststudium = st.text_input("Selbststudium", value="")
+
+        st.markdown("### Content and learning outcomes")
+        inhalte = st.text_area("Inhalte", height=160)
+        lernergebnisse = st.text_area("Lernergebnisse / Kompetenzziele", height=160)
+
+        st.markdown("### Requirements and organisational information")
+        teilnahmevoraussetzungen = st.text_area(
+            "Teilnahmevoraussetzungen für Modul bzw. für einzelne Lehrveranstaltungen des Moduls",
+            value="keine",
+            height=80,
+        )
+        empfohlene_voraussetzungen = st.text_area("Empfohlene Voraussetzungen", value="keine", height=80)
+        organisatorische_hinweise = st.text_area("Organisatorische Hinweise", value="keine", height=80)
+
+        st.markdown("### Study programme information")
+        zuordnung = st.text_input("Zuordnung des Moduls (Studiengang / Fachbereich)", value="B.Sc. Geowissenschaften / FB 11")
+        verwendbarkeit = st.text_input("Verwendbarkeit des Moduls für andere Studiengänge", value="")
+        modulbeauftragte = st.text_input("Modulbeauftragte / Modulbeauftragter")
+
+        st.markdown("### Assessment and teaching")
+        col1, col2 = st.columns(2)
+        with col1:
+            teilnahmenachweise = st.text_input("Teilnahmenachweise", value="keine")
+            leistungsnachweise = st.text_input("Leistungsnachweise", value="keine")
+            lehr_lernformen = st.text_input("Lehr- / Lernformen", value="")
+        with col2:
+            sprache = st.text_input("Unterrichts- / Prüfungssprache", value="Deutsch")
+            modulabschlusspruefung = st.text_input("Modulabschlussprüfung bestehend aus", value="")
+            kumulative_pruefung = st.text_input("kumulative Modulprüfung bestehend aus", value="")
+            bildung_modulnote = st.text_input("Bildung der Modulnote bei kumulativen Modulprüfungen", value="")
+
+        st.markdown("### Semester table")
+        st.write("Add one row for each course unit belonging to this module.")
+        semester_table_df = pd.DataFrame(
+            [
+                {
+                    "Titel": modul_name_de,
+                    "LV-Form": "",
+                    "SWS": anzahl_sws,
+                    "CP": cp,
+                    "1": "X",
+                    "2": "",
+                    "3": "",
+                    "4": "",
+                    "5": "",
+                    "6": "",
+                }
+            ]
+        )
+        edited_semester_table = st.data_editor(
+            semester_table_df,
+            num_rows="dynamic",
+            hide_index=True,
+            use_container_width=True,
+        )
+
+        bemerkungen = st.text_area("Bemerkungen", value="keine", height=80)
+        aenderung = st.text_input("Änderung", value="Bereitstellung")
+
+        submitted = st.form_submit_button("Save new module")
+
+    if submitted:
+        if modul_code.strip() == "":
+            st.error("Please enter a Modul-Code.")
+        elif modul_name_de.strip() == "" and modul_name_en.strip() == "":
+            st.error("Please enter at least a German or English module name.")
+        else:
+            safe_module_code = clean_plan_name(modul_code)
+            output_path = MODULE_FOLDER / f"{safe_module_code}.json"
+
+            if output_path.exists():
+                st.error(f"A module file named `{output_path.name}` already exists. Please choose another Modul-Code.")
+            else:
+                semester_table = edited_semester_table.fillna("").values.tolist()
+
+                new_module = {
+                    "Modul-Code": modul_code.strip(),
+                    "Modul-Name-en": modul_name_en.strip(),
+                    "Modul-Name-de": modul_name_de.strip(),
+                    "Modul-Typ": modul_typ,
+                    "Anzhal CP und Arbeitsaufwand": f"{int(cp)} CP = {int(arbeitsaufwand)} h",
+                    "Anzahl SWS": f"{int(anzahl_sws)} SWS",
+                    "Kontaktstudium": kontaktstudium,
+                    "Selbststudium": selbststudium,
+                    "Inhalte": inhalte,
+                    "Lernergebnisse / Kompetenzziele": lernergebnisse,
+                    "Teilnahmevoraussetzungen für Modul bzw. für einzelne Lehrveranstaltungen des Moduls": teilnahmevoraussetzungen,
+                    "Empfohlene Voraussetzungen": empfohlene_voraussetzungen,
+                    "Organisatorische Hinweise": organisatorische_hinweise,
+                    "Zuordnung des Moduls (Studiengang / Fachbereich)": zuordnung,
+                    "Verwendbarkeit des Moduls für andere Studiengänge": verwendbarkeit,
+                    "Häufigkeit des Angebots": haeufigkeit,
+                    "Dauer des Moduls": dauer,
+                    "Modulbeauftragte / Modulbeauftragter": modulbeauftragte,
+                    "Studiennachweise/ ggf. als Prüfungsvorleistungen": {
+                        "Teilnahmenachweise": teilnahmenachweise,
+                        "Leistungsnachweise": leistungsnachweise,
+                    },
+                    "Lehr- / Lernformen": lehr_lernformen,
+                    "Unterrichts- / Prüfungssprache": sprache,
+                    "Modulprüfung": {
+                        "Modulabschlussprüfung bestehend aus": modulabschlusspruefung,
+                        "kumulative Modulprüfung bestehend aus": kumulative_pruefung,
+                        "Bildung der Modulnote bei kumulativen Modulprüfungen": bildung_modulnote,
+                    },
+                    "Semester-Tabelle": semester_table,
+                    "Bemerkungen": bemerkungen,
+                    "Version": [version],
+                    "Änderung": {
+                        version: aenderung,
+                    },
+                }
+
+                with open(output_path, "w", encoding="utf-8") as f:
+                    json.dump(new_module, f, indent=4, ensure_ascii=False)
+
+                st.success(f"Saved new module as `{output_path}`.")
+                st.info("Reload the app or switch plans to see the new module in the BSc Plan tab.")

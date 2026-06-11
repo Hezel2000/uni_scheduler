@@ -1,0 +1,52 @@
+{
+    "Modul-Code": "BP98",
+    "Modul-Name-en": "",
+    "Modul-Name-de": "test",
+    "Modul-Typ": "Pflichtmodul",
+    "Anzhal CP und Arbeitsaufwand": "6 CP = 180 h",
+    "Anzahl SWS": "4 SWS",
+    "Kontaktstudium": "4 SWS",
+    "Selbststudium": "",
+    "Inhalte": "",
+    "Lernergebnisse / Kompetenzziele": "",
+    "Teilnahmevoraussetzungen für Modul bzw. für einzelne Lehrveranstaltungen des Moduls": "keine",
+    "Empfohlene Voraussetzungen": "keine",
+    "Organisatorische Hinweise": "keine",
+    "Zuordnung des Moduls (Studiengang / Fachbereich)": "B.Sc. Geowissenschaften / FB 11",
+    "Verwendbarkeit des Moduls für andere Studiengänge": "",
+    "Häufigkeit des Angebots": "jährlich",
+    "Dauer des Moduls": "1 Semester",
+    "Modulbeauftragte / Modulbeauftragter": "",
+    "Studiennachweise/ ggf. als Prüfungsvorleistungen": {
+        "Teilnahmenachweise": "keine",
+        "Leistungsnachweise": "keine"
+    },
+    "Lehr- / Lernformen": "",
+    "Unterrichts- / Prüfungssprache": "Deutsch",
+    "Modulprüfung": {
+        "Modulabschlussprüfung bestehend aus": "",
+        "kumulative Modulprüfung bestehend aus": "",
+        "Bildung der Modulnote bei kumulativen Modulprüfungen": ""
+    },
+    "Semester-Tabelle": [
+        [
+            "test",
+            "",
+            4,
+            6,
+            "X",
+            "",
+            "",
+            "",
+            "",
+            ""
+        ]
+    ],
+    "Bemerkungen": "keine",
+    "Version": [
+        "2025-01-06"
+    ],
+    "Änderung": {
+        "2025-01-06": "Bereitstellung"
+    }
+}
