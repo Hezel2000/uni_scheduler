@@ -16,6 +16,7 @@ PLANS_FOLDER.mkdir(exist_ok=True)
 
 SEMESTERS_ALL = ["Unplanned", "1", "2", "3", "4", "5", "6"]
 BSC_SEMESTERS = ["1", "2", "3", "4", "5", "6"]
+MSC_SEMESTERS = ["1", "2", "3", "4"]
 MODULE_TYPES = ["Pflichtmodul", "Wahlpflichtmodul", "Importmodul"]
 
 
@@ -448,21 +449,99 @@ if saved_plans:
 # Tabs
 # -----------------------------------------------------------------------------
 
-bsc_plan_tab, module_management_tab = st.tabs(["BSc Plan", "Module management"])
+bsc_plan_tab, msc_plan_tab, module_management_tab = st.tabs(["BSc Plan", "MSc Plan", "Module management"])
 
 
 # -----------------------------------------------------------------------------
-# BSc plan tab
+# Plan tab renderer
 # -----------------------------------------------------------------------------
 
-with bsc_plan_tab:
+st.markdown(
+    """
+    <style>
+    .semester-plan-row {
+        display: grid;
+        grid-template-columns: 160px 1fr;
+        gap: 0.75rem;
+        align-items: start;
+        margin-bottom: 1rem;
+    }
+    .semester-label {
+        font-size: 1.1rem;
+        font-weight: 700;
+        padding: 0.75rem;
+        border: 1px solid rgba(128, 128, 128, 0.3);
+        border-radius: 10px;
+        min-height: 220px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 0.35rem;
+    }
+    .semester-label-main {
+        font-size: 1.1rem;
+        font-weight: 700;
+    }
+    .semester-label-stat {
+        font-size: 0.95rem;
+        font-weight: 600;
+        opacity: 0.8;
+    }
+    .course-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 260px));
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+    .course-card {
+        border: 1px solid rgba(128, 128, 128, 0.3);
+        border-radius: 10px;
+        padding: 0.75rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        width: 260px;
+        height: 220px;
+        overflow: hidden;
+        box-sizing: border-box;
+    }
+    .course-card.pflichtmodul {
+        background-color: rgba(255, 215, 0, 0.28);
+    }
+    .course-card.wahlpflichtmodul {
+        background-color: rgba(128, 0, 32, 0.28);
+    }
+    .course-card.importmodul {
+        background-color: rgba(0, 105, 148, 0.28);
+    }
+    .course-name {
+        font-weight: 650;
+        margin-bottom: 0.25rem;
+    }
+    .course-cp {
+        font-size: 0.9rem;
+        opacity: 0.75;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
+
+def render_plan_tab(
+    degree_label,
+    code_prefix,
+    semesters,
+    semester_options,
+    working_key,
+    working_plan_key,
+    unplanned_editor_key,
+    planned_editor_key,
+    save_button_key,
+):
+    """Render one independent plan tab for one degree programme."""
     courses = load_modules()
-    courses = courses[courses["code"].astype(str).str.startswith("B")].copy()
+    courses = courses[courses["code"].astype(str).str.startswith(code_prefix)].copy()
     courses = courses[["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]]
-
-    # Keep an unsaved working copy so modules can move between both tables immediately.
-    working_key = "bsc_working_plan_df"
-    working_plan_key = "bsc_working_plan_name"
 
     if (
         working_key not in st.session_state
@@ -471,7 +550,6 @@ with bsc_plan_tab:
         st.session_state[working_key] = courses.copy()
         st.session_state[working_plan_key] = st.session_state["active_plan"]
     else:
-        # Keep module metadata current, but preserve unsaved semester/type choices.
         saved_choices = st.session_state[working_key][["code", "semester", "selected_type"]].copy()
         st.session_state[working_key] = courses.drop(columns=["semester", "selected_type"]).merge(
             saved_choices,
@@ -491,25 +569,27 @@ with bsc_plan_tab:
     st.info("The columns with the three lines and a pen symbol — Semester and Selected type — can be edited by double-clicking on them.")
     left_col, right_col = st.columns(2)
 
+    column_config = {
+        "code": st.column_config.TextColumn("Code"),
+        "course": st.column_config.TextColumn("Course"),
+        "cp": st.column_config.NumberColumn("CP", format="%d"),
+        "sws": st.column_config.NumberColumn("SWS", format="%d"),
+        "semester": st.column_config.SelectboxColumn("Semester", options=semester_options),
+        "selected_type": st.column_config.SelectboxColumn("Selected type", options=MODULE_TYPES),
+        "type": st.column_config.TextColumn("Type"),
+        "responsible": st.column_config.TextColumn("Responsible"),
+    }
+
     with left_col:
         st.markdown("### Not yet in plan")
         unplanned_courses = working_courses[working_courses["semester"] == "Unplanned"]
         edited_unplanned_courses = st.data_editor(
             unplanned_courses,
-            column_config={
-                "code": st.column_config.TextColumn("Code"),
-                "course": st.column_config.TextColumn("Course"),
-                "cp": st.column_config.NumberColumn("CP", format="%d"),
-                "sws": st.column_config.NumberColumn("SWS", format="%d"),
-                "semester": st.column_config.SelectboxColumn("Semester", options=SEMESTERS_ALL),
-                "selected_type": st.column_config.SelectboxColumn("Selected type", options=MODULE_TYPES),
-                "type": st.column_config.TextColumn("Type"),
-                "responsible": st.column_config.TextColumn("Responsible"),
-            },
+            column_config=column_config,
             disabled=["code", "course", "cp", "sws", "type", "responsible"],
             hide_index=True,
             use_container_width=True,
-            key="unplanned_courses_editor",
+            key=unplanned_editor_key,
         )
 
     with right_col:
@@ -517,20 +597,11 @@ with bsc_plan_tab:
         planned_courses = working_courses[working_courses["semester"] != "Unplanned"]
         edited_planned_courses = st.data_editor(
             planned_courses,
-            column_config={
-                "code": st.column_config.TextColumn("Code"),
-                "course": st.column_config.TextColumn("Course"),
-                "cp": st.column_config.NumberColumn("CP", format="%d"),
-                "sws": st.column_config.NumberColumn("SWS", format="%d"),
-                "semester": st.column_config.SelectboxColumn("Semester", options=SEMESTERS_ALL),
-                "selected_type": st.column_config.SelectboxColumn("Selected type", options=MODULE_TYPES),
-                "type": st.column_config.TextColumn("Type"),
-                "responsible": st.column_config.TextColumn("Responsible"),
-            },
+            column_config=column_config,
             disabled=["code", "course", "cp", "sws", "type", "responsible"],
             hide_index=True,
             use_container_width=True,
-            key="planned_courses_editor",
+            key=planned_editor_key,
         )
 
     edited = pd.concat([edited_planned_courses, edited_unplanned_courses], ignore_index=True)
@@ -546,7 +617,7 @@ with bsc_plan_tab:
     safe_name = clean_plan_name(new_plan_name)
     plan_will_overwrite = safe_name != "" and plan_path(safe_name).exists()
 
-    if st.button("Save plan"):
+    if st.button("Save plan", key=save_button_key):
         if safe_name == "":
             st.error("Please enter a plan name.")
         elif plan_will_overwrite:
@@ -559,83 +630,13 @@ with bsc_plan_tab:
 
     st.caption(f"Active plan: `{st.session_state['active_plan']}`")
 
-    assigned_modules = edited[edited["semester"].isin(BSC_SEMESTERS)]
+    assigned_modules = edited[edited["semester"].isin(semesters)]
     plan_total_cp_header = int(assigned_modules["cp"].sum())
     plan_total_sws_header = int(assigned_modules["sws"].sum())
 
-    st.subheader(f"BSc Plan ({plan_total_cp_header} CP · {plan_total_sws_header} SWS)")
+    st.subheader(f"{degree_label} Plan ({plan_total_cp_header} CP · {plan_total_sws_header} SWS)")
 
-    st.markdown(
-        """
-        <style>
-        .semester-plan-row {
-            display: grid;
-            grid-template-columns: 160px 1fr;
-            gap: 0.75rem;
-            align-items: start;
-            margin-bottom: 1rem;
-        }
-        .semester-label {
-            font-size: 1.1rem;
-            font-weight: 700;
-            padding: 0.75rem;
-            border: 1px solid rgba(128, 128, 128, 0.3);
-            border-radius: 10px;
-            min-height: 220px;
-            box-sizing: border-box;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 0.35rem;
-        }
-        .semester-label-main {
-            font-size: 1.1rem;
-            font-weight: 700;
-        }
-        .semester-label-stat {
-            font-size: 0.95rem;
-            font-weight: 600;
-            opacity: 0.8;
-        }
-        .course-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(260px, 260px));
-            gap: 0.75rem;
-            align-items: stretch;
-        }
-        .course-card {
-            border: 1px solid rgba(128, 128, 128, 0.3);
-            border-radius: 10px;
-            padding: 0.75rem;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-            width: 260px;
-            height: 220px;
-            overflow: hidden;
-            box-sizing: border-box;
-        }
-        .course-card.pflichtmodul {
-            background-color: rgba(255, 215, 0, 0.28);
-        }
-        .course-card.wahlpflichtmodul {
-            background-color: rgba(128, 0, 32, 0.28);
-        }
-        .course-card.importmodul {
-            background-color: rgba(0, 105, 148, 0.28);
-        }
-        .course-name {
-            font-weight: 650;
-            margin-bottom: 0.25rem;
-        }
-        .course-cp {
-            font-size: 0.9rem;
-            opacity: 0.75;
-        }
-        </style>
-        """,
-        unsafe_allow_html=True,
-    )
-
-    for semester in BSC_SEMESTERS:
+    for semester in semesters:
         sem_df = edited[edited["semester"] == semester].copy()
         sem_df["sort_order"] = sem_df["selected_type"].apply(
             lambda x: 1 if str(x).strip() == "Importmodul" else 0
@@ -681,6 +682,34 @@ with bsc_plan_tab:
 
         st.markdown(semester_html, unsafe_allow_html=True)
         st.divider()
+
+
+with bsc_plan_tab:
+    render_plan_tab(
+        degree_label="BSc",
+        code_prefix="B",
+        semesters=BSC_SEMESTERS,
+        semester_options=SEMESTERS_ALL,
+        working_key="bsc_working_plan_df",
+        working_plan_key="bsc_working_plan_name",
+        unplanned_editor_key="bsc_unplanned_courses_editor",
+        planned_editor_key="bsc_planned_courses_editor",
+        save_button_key="save_bsc_plan",
+    )
+
+
+with msc_plan_tab:
+    render_plan_tab(
+        degree_label="MSc",
+        code_prefix="M",
+        semesters=MSC_SEMESTERS,
+        semester_options=["Unplanned", "1", "2", "3", "4"],
+        working_key="msc_working_plan_df",
+        working_plan_key="msc_working_plan_name",
+        unplanned_editor_key="msc_unplanned_courses_editor",
+        planned_editor_key="msc_planned_courses_editor",
+        save_button_key="save_msc_plan",
+    )
 
 
 # -----------------------------------------------------------------------------
