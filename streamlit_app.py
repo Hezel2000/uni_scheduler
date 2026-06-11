@@ -488,6 +488,7 @@ with bsc_plan_tab:
 
     working_courses = st.session_state[working_key].copy()
 
+    st.info("The columns with the three lines and a pen symbol — Semester and Selected type — can be edited by double-clicking on them.")
     left_col, right_col = st.columns(2)
 
     with left_col:
