@@ -59,6 +59,14 @@ def save_plan(df, plan_name):
         json.dump(plan, f, indent=4, ensure_ascii=False)
 
 
+# --- Plan deletion function
+def delete_plan(plan_name):
+    """Delete a named plan if it exists."""
+    path = plan_path(plan_name)
+    if path.exists():
+        path.unlink()
+
+
 def load_modules():
     """Load all module JSON files and convert them into a scheduler table."""
     plan = load_plan(st.session_state["active_plan"])
@@ -77,11 +85,21 @@ def load_modules():
         name_en = module.get("Modul-Name-en", "")
         cp_text = module.get("Anzhal CP und Arbeitsaufwand", "")
 
+        module_type = str(module.get("Modul-Typ", ""))
+
+        if "Wahlpflichtmodul" in module_type:
+            default_selected_type = "Wahlpflichtmodul"
+        elif "Pflichtmodul" in module_type:
+            default_selected_type = "Pflichtmodul"
+        else:
+            default_selected_type = "Pflichtmodul"
+
         rows.append({
             "code": code,
             "course": name_de or name_en or code,
             "cp": extract_cp(cp_text),
-            "type": module.get("Modul-Typ", ""),
+            "type": module_type,
+            "selected_type": default_selected_type,
             "responsible": module.get("Modulbeauftragte / Modulbeauftragter", ""),
             "semester": plan.get(code, "Unplanned"),
             "file": str(path)
@@ -99,18 +117,44 @@ if "active_plan" not in st.session_state:
 
 st.sidebar.header("Plans")
 
-plan_options = saved_plans if saved_plans else ["default"]
+plan_options = saved_plans.copy()
+
+if st.session_state["active_plan"] not in plan_options:
+    plan_options.append(st.session_state["active_plan"])
+
+if not plan_options:
+    plan_options = ["default"]
+
+plan_options = sorted(plan_options)
+
+
 selected_plan = st.sidebar.selectbox(
     "Load plan",
     options=plan_options,
-    index=plan_options.index(st.session_state["active_plan"]) if st.session_state["active_plan"] in plan_options else 0
+    index=plan_options.index(st.session_state["active_plan"])
 )
 
+# Update active_plan and rerun if selection changes
 if selected_plan != st.session_state["active_plan"]:
     st.session_state["active_plan"] = selected_plan
     st.rerun()
 
+
 new_plan_name = st.sidebar.text_input("Save as", value=st.session_state["active_plan"])
+
+# --- Sidebar delete UI block
+if saved_plans:
+    st.sidebar.divider()
+    st.sidebar.subheader("Delete plan")
+    plan_to_delete = st.sidebar.selectbox("Plan to delete", options=saved_plans)
+    confirm_delete = st.sidebar.checkbox(f"Really delete `{plan_to_delete}`?")
+
+    if st.sidebar.button("Delete selected plan", disabled=not confirm_delete):
+        delete_plan(plan_to_delete)
+        remaining_plans = list_saved_plans()
+        st.session_state["active_plan"] = remaining_plans[0] if remaining_plans else "default"
+        st.sidebar.success(f"Deleted plan `{plan_to_delete}`")
+        st.rerun()
 
 
 courses = load_modules()
@@ -122,6 +166,10 @@ edited = st.data_editor(
         "course": st.column_config.TextColumn("Course"),
         "cp": st.column_config.NumberColumn("CP", format="%d"),
         "type": st.column_config.TextColumn("Type"),
+        "selected_type": st.column_config.SelectboxColumn(
+            "Selected type",
+            options=["Pflichtmodul", "Wahlpflichtmodul"]
+        ),
         "responsible": st.column_config.TextColumn("Responsible"),
         "semester": st.column_config.SelectboxColumn(
             "Semester",
@@ -135,14 +183,30 @@ edited = st.data_editor(
 )
 
 
+# --- Save plan block with overwrite warning and confirmation
+safe_name = clean_plan_name(new_plan_name)
+plan_will_overwrite = (
+    safe_name != ""
+    and plan_path(safe_name).exists()
+    and safe_name != st.session_state["active_plan"]
+)
+
+if plan_will_overwrite:
+    st.warning(f"Saving will overwrite the existing plan `{safe_name}`.")
+    confirm_overwrite = st.checkbox(f"Yes, overwrite `{safe_name}`")
+else:
+    confirm_overwrite = True
+
 if st.button("Save plan"):
-    safe_name = clean_plan_name(new_plan_name)
     if safe_name == "":
         st.error("Please enter a plan name.")
+    elif plan_will_overwrite and not confirm_overwrite:
+        st.error("Please confirm that you want to overwrite the existing plan.")
     else:
         save_plan(edited, safe_name)
         st.session_state["active_plan"] = safe_name
         st.success(f"Plan saved as {safe_name}.json")
+        st.rerun()
 
 st.caption(f"Active plan: `{st.session_state['active_plan']}`")
 
@@ -166,11 +230,16 @@ st.markdown(
         border: 1px solid rgba(128, 128, 128, 0.3);
         border-radius: 10px;
         padding: 0.75rem;
-        background-color: rgba(255, 255, 255, 0.04);
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
         min-width: 180px;
         max-width: 240px;
         flex: 1 1 180px;
+    }
+    .course-card.pflichtmodul {
+        background-color: rgba(255, 215, 0, 0.28);
+    }
+    .course-card.wahlpflichtmodul {
+        background-color: rgba(128, 0, 32, 0.28);
     }
     .course-name {
         font-weight: 650;
@@ -197,8 +266,10 @@ for semester in semesters:
 
     course_cards = ""
     for _, row in sem_df.iterrows():
+        selected_type = str(row["selected_type"]).strip()
+        card_class = "pflichtmodul" if selected_type == "Pflichtmodul" else "wahlpflichtmodul"
         course_cards += f"""
-        <div class="course-card">
+        <div class="course-card {card_class}">
             <div class="course-name">{row['code']}: {row['course']}</div>
             <div class="course-cp">{int(row['cp'])} CP</div>
         </div>
