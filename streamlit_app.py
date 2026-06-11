@@ -67,6 +67,49 @@ def delete_plan(plan_name):
         path.unlink()
 
 
+# --- Modal dialog for overwriting plans
+@st.dialog("Overwrite existing plan?")
+def overwrite_plan_dialog(df, plan_name):
+    """Ask for confirmation before overwriting an existing plan."""
+    st.warning(f"The plan `{plan_name}` already exists. Saving will overwrite it.")
+    st.write("This cannot be undone unless you have a backup or Git history.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Overwrite", type="primary"):
+            save_plan(df, plan_name)
+            st.session_state["active_plan"] = plan_name
+            st.success(f"Plan saved as {plan_name}.json")
+            st.rerun()
+
+    with col2:
+        if st.button("Cancel"):
+            st.rerun()
+
+
+# --- Modal dialog for deleting plans
+@st.dialog("Delete plan?")
+def delete_plan_dialog(plan_name):
+    """Ask for confirmation before deleting an existing plan."""
+    st.warning(f"The plan `{plan_name}` will be deleted.")
+    st.write("This cannot be undone unless you have a backup or Git history.")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+        if st.button("Delete", type="primary"):
+            delete_plan(plan_name)
+            remaining_plans = list_saved_plans()
+            st.session_state["active_plan"] = remaining_plans[0] if remaining_plans else "default"
+            st.success(f"Deleted plan {plan_name}.")
+            st.rerun()
+
+    with col2:
+        if st.button("Cancel"):
+            st.rerun()
+
+
 def load_modules():
     """Load all module JSON files and convert them into a scheduler table."""
     plan = load_plan(st.session_state["active_plan"])
@@ -147,14 +190,9 @@ if saved_plans:
     st.sidebar.divider()
     st.sidebar.subheader("Delete plan")
     plan_to_delete = st.sidebar.selectbox("Plan to delete", options=saved_plans)
-    confirm_delete = st.sidebar.checkbox(f"Really delete `{plan_to_delete}`?")
 
-    if st.sidebar.button("Delete selected plan", disabled=not confirm_delete):
-        delete_plan(plan_to_delete)
-        remaining_plans = list_saved_plans()
-        st.session_state["active_plan"] = remaining_plans[0] if remaining_plans else "default"
-        st.sidebar.success(f"Deleted plan `{plan_to_delete}`")
-        st.rerun()
+    if st.sidebar.button("Delete selected plan"):
+        delete_plan_dialog(plan_to_delete)
 
 
 courses = load_modules()
@@ -183,25 +221,15 @@ edited = st.data_editor(
 )
 
 
-# --- Save plan block with overwrite warning and confirmation
+# --- Save plan block with modal overwrite warning
 safe_name = clean_plan_name(new_plan_name)
-plan_will_overwrite = (
-    safe_name != ""
-    and plan_path(safe_name).exists()
-    and safe_name != st.session_state["active_plan"]
-)
-
-if plan_will_overwrite:
-    st.warning(f"Saving will overwrite the existing plan `{safe_name}`.")
-    confirm_overwrite = st.checkbox(f"Yes, overwrite `{safe_name}`")
-else:
-    confirm_overwrite = True
+plan_will_overwrite = safe_name != "" and plan_path(safe_name).exists()
 
 if st.button("Save plan"):
     if safe_name == "":
         st.error("Please enter a plan name.")
-    elif plan_will_overwrite and not confirm_overwrite:
-        st.error("Please confirm that you want to overwrite the existing plan.")
+    elif plan_will_overwrite:
+        overwrite_plan_dialog(edited, safe_name)
     else:
         save_plan(edited, safe_name)
         st.session_state["active_plan"] = safe_name
