@@ -11,13 +11,25 @@
         "semester": "1",
         "selected_type": "Pflichtmodul"
     },
+    "MWp GeolPal1": {
+        "semester": "2",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp GeolPal7": {
+        "semester": "1",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Gph1": {
+        "semester": "1",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min3": {
+        "semester": "1",
+        "selected_type": "Wahlpflichtmodul"
+    },
     "MP4": {
         "semester": "Unplanned",
         "selected_type": "Pflichtmodul"
-    },
-    "MWp GeolPal1": {
-        "semester": "Unplanned",
-        "selected_type": "Wahlpflichtmodul"
     },
     "MWp GeolPal2": {
         "semester": "Unplanned",
@@ -39,14 +51,6 @@
         "semester": "Unplanned",
         "selected_type": "Wahlpflichtmodul"
     },
-    "MWp GeolPal7": {
-        "semester": "Unplanned",
-        "selected_type": "Wahlpflichtmodul"
-    },
-    "MWp Gph1": {
-        "semester": "Unplanned",
-        "selected_type": "Wahlpflichtmodul"
-    },
     "MWp Gph2": {
         "semester": "Unplanned",
         "selected_type": "Wahlpflichtmodul"
@@ -64,10 +68,6 @@
         "selected_type": "Wahlpflichtmodul"
     },
     "MWp Min2": {
-        "semester": "Unplanned",
-        "selected_type": "Wahlpflichtmodul"
-    },
-    "MWp Min3": {
         "semester": "Unplanned",
         "selected_type": "Wahlpflichtmodul"
     },

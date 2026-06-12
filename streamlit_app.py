@@ -754,34 +754,6 @@ def render_plan_tab(
     save_button_key,
 ):
     """Render one independent plan tab for one degree programme."""
-    courses = load_modules(degree_label)
-    courses = courses[courses["code"].astype(str).str.startswith(code_prefix)].copy()
-    courses = courses[["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]]
-
-    active_plan_key = active_plan_state_key(degree_label)
-    if (
-        working_key not in st.session_state
-        or st.session_state.get(working_plan_key) != st.session_state[active_plan_key]
-    ):
-        st.session_state[working_key] = courses.copy()
-        st.session_state[working_plan_key] = st.session_state[active_plan_key]
-    else:
-        saved_choices = st.session_state[working_key][["code", "semester", "selected_type"]].copy()
-        st.session_state[working_key] = courses.drop(columns=["semester", "selected_type"]).merge(
-            saved_choices,
-            on="code",
-            how="left",
-        )
-        st.session_state[working_key]["semester"] = st.session_state[working_key]["semester"].fillna("Unplanned")
-        st.session_state[working_key]["selected_type"] = st.session_state[working_key]["selected_type"].fillna(
-            st.session_state[working_key]["type"].apply(default_selected_type_from_module_type)
-        )
-        st.session_state[working_key] = st.session_state[working_key][
-            ["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]
-        ]
-
-    working_courses = st.session_state[working_key].copy()
-
     active_plan_key = active_plan_state_key(degree_label)
     current_active_plan = st.session_state[active_plan_key]
 
@@ -813,17 +785,49 @@ def render_plan_tab(
         )
 
     with col3:
-        plan_to_delete = st.selectbox(
-            "Plan to delete",
-            options=saved_plans,
-            key=f"{degree_label}_delete_plan_name",
-        )
-        if st.button("Delete selected plan", key=f"{degree_label}_delete_plan"):
-            delete_plan_dialog(degree_label, plan_to_delete)
+        truly_saved_plans = list_saved_plans(degree_label)
+        if truly_saved_plans:
+            plan_to_delete = st.selectbox(
+                "Plan to delete",
+                options=truly_saved_plans,
+                key=f"{degree_label}_delete_plan_name",
+            )
+            if st.button("Delete selected plan", key=f"{degree_label}_delete_plan"):
+                delete_plan_dialog(degree_label, plan_to_delete)
+        else:
+            st.text("No saved plans yet.")
 
     st.caption("BSc and MSc plans are stored in separate files using the same displayed plan name.")
     st.divider()
-    st.info("The cells in the columns with the three lines and a pen symbol — Semester and Selected type — can be edited by clicking twice on them. Clicking the first time on a cell in these columns selects it, clicking the second time displayse the dropdown, from which a selection can be made. This way modules can be added, removed, ... to/from the plan.")
+
+    courses = load_modules(degree_label)
+    courses = courses[courses["code"].astype(str).str.startswith(code_prefix)].copy()
+    courses = courses[["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]]
+
+    if (
+        working_key not in st.session_state
+        or st.session_state.get(working_plan_key) != st.session_state[active_plan_key]
+    ):
+        st.session_state[working_key] = courses.copy()
+        st.session_state[working_plan_key] = st.session_state[active_plan_key]
+    else:
+        saved_choices = st.session_state[working_key][["code", "semester", "selected_type"]].copy()
+        st.session_state[working_key] = courses.drop(columns=["semester", "selected_type"]).merge(
+            saved_choices,
+            on="code",
+            how="left",
+        )
+        st.session_state[working_key]["semester"] = st.session_state[working_key]["semester"].fillna("Unplanned")
+        st.session_state[working_key]["selected_type"] = st.session_state[working_key]["selected_type"].fillna(
+            st.session_state[working_key]["type"].apply(default_selected_type_from_module_type)
+        )
+        st.session_state[working_key] = st.session_state[working_key][
+            ["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]
+        ]
+
+    working_courses = st.session_state[working_key].copy()
+
+    st.info("The cells in the columns with the three lines and a pen symbol — Semester and Selected type — can be edited by clicking twice on them. Clicking the first time on a cell in these columns selects it, clicking the second time displays the dropdown, from which a selection can be made. This way modules can be added, removed, ... to/from the plan.")
     left_col, right_col = st.columns(2)
 
     column_config = {
