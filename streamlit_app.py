@@ -1,6 +1,8 @@
 import json
 from pathlib import Path
+import random
 import re
+import textwrap
 
 import pandas as pd
 import streamlit as st
@@ -305,6 +307,195 @@ def load_modules():
 
 
 # -----------------------------------------------------------------------------
+# PDF helpers
+# -----------------------------------------------------------------------------
+
+def pdf_safe_text(text):
+    """Make text safe for a simple PDF text stream while preserving German umlauts."""
+    text = str(text).replace("\r", " ").replace("\t", " ")
+    text = text.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+    return text
+
+
+def wrapped_lines(label, value, width=95, max_chars=1200):
+    """Create wrapped text lines for one module field."""
+    value = str(value).strip()
+    if value == "":
+        value = "keine"
+
+    if len(value) > max_chars:
+        value = value[:max_chars].rstrip() + " ..."
+
+    lines = [label]
+    for paragraph in value.split("\n"):
+        paragraph = paragraph.strip()
+        if paragraph == "":
+            lines.append("")
+        else:
+            lines.extend(textwrap.wrap(paragraph, width=width))
+    return lines
+
+
+def module_lines_for_pdf(module):
+    """Convert one module JSON dictionary into readable PDF text lines."""
+    code = module.get("Modul-Code", "")
+    name_de = module.get("Modul-Name-de", "")
+    name_en = module.get("Modul-Name-en", "")
+    module_type = module.get("Modul-Typ", "")
+    cp = module.get("Anzhal CP und Arbeitsaufwand", "")
+    sws = module.get("Anzahl SWS", "")
+    responsible = module.get("Modulbeauftragte / Modulbeauftragter", "")
+
+    lines = [
+        f"## {code}: {name_de}",
+        f"English title: {name_en}",
+        f"Type: {module_type}",
+        f"CP / workload: {cp}",
+        f"SWS: {sws}",
+        f"Responsible: {responsible}",
+        "",
+    ]
+
+    lines.extend(wrapped_lines("Inhalte:", module.get("Inhalte", "")))
+    lines.append("")
+    lines.extend(wrapped_lines("Lernergebnisse / Kompetenzziele:", module.get("Lernergebnisse / Kompetenzziele", "")))
+    lines.append("")
+    lines.extend(wrapped_lines("Modulprüfung:", module.get("Modulprüfung", {}), max_chars=600))
+    lines.append("")
+    lines.append("-" * 90)
+    lines.append("")
+    return lines
+
+
+def simple_pdf_from_lines(lines, title="Modulhandbuch"):
+    """Create a simple multi-page PDF from plain text lines without external dependencies."""
+    max_lines_per_page = 46
+    pages = []
+    current_page = []
+
+    for line in lines:
+        if len(current_page) >= max_lines_per_page:
+            pages.append(current_page)
+            current_page = []
+        current_page.append(line)
+
+    if current_page:
+        pages.append(current_page)
+
+    objects = []
+
+    def add_object(content):
+        objects.append(content)
+        return len(objects)
+
+    catalog_id = add_object("<< /Type /Catalog /Pages 2 0 R >>")
+    pages_id = add_object("")
+    font_regular_id = add_object("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>")
+    font_bold_id = add_object("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>")
+
+    page_ids = []
+
+    for page_number, page_lines in enumerate(pages, start=1):
+        stream_lines = []
+
+        y = 800
+        for line in page_lines:
+            if line.startswith("# "):
+                font = "/F2 22 Tf"
+                clean_line = line.replace("# ", "", 1)
+                line_spacing = 28
+            elif line.startswith("## "):
+                font = "/F2 14 Tf"
+                clean_line = line.replace("## ", "", 1)
+                line_spacing = 20
+            elif line.endswith(":"):
+                font = "/F2 10 Tf"
+                clean_line = line
+                line_spacing = 14
+            else:
+                font = "/F1 10 Tf"
+                clean_line = line
+                line_spacing = 14
+
+            stream_lines.append(f"BT {font} 50 {y} Td ({pdf_safe_text(clean_line)}) Tj ET")
+            y -= line_spacing
+
+        # Page number at bottom right
+        stream_lines.append(f"BT /F1 9 Tf 520 30 Td ({page_number}) Tj ET")
+
+        stream = "\n".join(stream_lines)
+        stream_bytes = stream.encode("cp1252", errors="replace")
+        content_id = add_object(
+            f"<< /Length {len(stream_bytes)} >>\nstream\n" +
+            stream_bytes.decode("cp1252", errors="replace") +
+            "\nendstream"
+        )
+        page_id = add_object(
+            f"<< /Type /Page /Parent {pages_id} 0 R "
+            f"/MediaBox [0 0 595 842] "
+            f"/Resources << /Font << /F1 {font_regular_id} 0 R /F2 {font_bold_id} 0 R >> >> "
+            f"/Contents {content_id} 0 R >>"
+        )
+        page_ids.append(page_id)
+
+    kids = " ".join(f"{page_id} 0 R" for page_id in page_ids)
+    objects[pages_id - 1] = f"<< /Type /Pages /Kids [{kids}] /Count {len(page_ids)} >>"
+
+    pdf = bytearray()
+    pdf.extend(b"%PDF-1.4\n")
+    offsets = [0]
+
+    for object_number, content in enumerate(objects, start=1):
+        offsets.append(len(pdf))
+        encoded_content = content.encode("cp1252", errors="replace")
+        pdf.extend(f"{object_number} 0 obj\n".encode("cp1252"))
+        pdf.extend(encoded_content)
+        pdf.extend(b"\nendobj\n")
+
+    xref_position = len(pdf)
+    pdf.extend(f"xref\n0 {len(objects) + 1}\n".encode("cp1252"))
+    pdf.extend(b"0000000000 65535 f \n")
+
+    for offset in offsets[1:]:
+        pdf.extend(f"{offset:010d} 00000 n \n".encode("cp1252"))
+
+    pdf.extend(
+        f"trailer\n<< /Size {len(objects) + 1} /Root {catalog_id} 0 R >>\n"
+        f"startxref\n{xref_position}\n%%EOF".encode("cp1252")
+    )
+
+    return bytes(pdf)
+
+
+def create_random_modules_pdf(number_of_modules=5):
+    """Create a PDF with a readable summary of random modules."""
+    module_paths = sorted(MODULE_FOLDER.glob("*.json"))
+    if not module_paths:
+        return None, []
+
+    selected_paths = random.sample(module_paths, min(number_of_modules, len(module_paths)))
+    selected_modules = []
+
+    for module_path in selected_paths:
+        with open(module_path, "r", encoding="utf-8") as f:
+            selected_modules.append(json.load(f))
+
+    lines = [
+        "# Modulhandbuch",
+        f"Random module sample with {len(selected_modules)} modules",
+        "",
+        "=" * 90,
+        "",
+    ]
+
+    for module in selected_modules:
+        lines.extend(module_lines_for_pdf(module))
+
+    pdf_bytes = simple_pdf_from_lines(lines, title="Modulhandbuch")
+    return pdf_bytes, selected_modules
+
+
+# -----------------------------------------------------------------------------
 # Optional reference BSc plan
 # -----------------------------------------------------------------------------
 
@@ -449,7 +640,12 @@ if saved_plans:
 # Tabs
 # -----------------------------------------------------------------------------
 
-bsc_plan_tab, msc_plan_tab, module_management_tab = st.tabs(["BSc Plan", "MSc Plan", "Module management"])
+bsc_plan_tab, msc_plan_tab, module_management_tab, pdf_tab = st.tabs([
+    "BSc Plan",
+    "MSc Plan",
+    "Module management",
+    "PDF export",
+])
 
 
 # -----------------------------------------------------------------------------
@@ -711,6 +907,40 @@ with msc_plan_tab:
         save_button_key="save_msc_plan",
     )
 
+
+# -----------------------------------------------------------------------------
+# PDF export tab
+# -----------------------------------------------------------------------------
+
+with pdf_tab:
+    st.subheader("PDF export")
+    st.info("This is a simple demonstrator to illustrate what is possible.")
+    st.write("Generate a PDF preview containing a sensible summary of five random modules.")
+
+    if st.button("Generate PDF with 5 random modules"):
+        pdf_bytes, selected_modules = create_random_modules_pdf(number_of_modules=5)
+        st.session_state["random_modules_pdf_bytes"] = pdf_bytes
+        st.session_state["random_modules_pdf_selection"] = selected_modules
+
+    if "random_modules_pdf_bytes" in st.session_state and st.session_state["random_modules_pdf_bytes"] is not None:
+        selected_modules = st.session_state.get("random_modules_pdf_selection", [])
+        selected_labels = [
+            f"{module.get('Modul-Code', '')}: {module.get('Modul-Name-de', module.get('Modul-Name-en', ''))}"
+            for module in selected_modules
+        ]
+
+        st.markdown("### Selected modules")
+        for label in selected_labels:
+            st.write(f"- {label}")
+
+        st.download_button(
+            label="Download PDF",
+            data=st.session_state["random_modules_pdf_bytes"],
+            file_name="random_modules.pdf",
+            mime="application/pdf",
+        )
+    else:
+        st.info("Click the button above to generate a PDF.")
 
 # -----------------------------------------------------------------------------
 # Module management tab
