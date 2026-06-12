@@ -81,29 +81,63 @@ def normalize_semester_value(value):
 # Plan helpers
 # -----------------------------------------------------------------------------
 
-def plan_path(plan_name):
-    """Return the JSON path for a named plan."""
+def plan_path(degree_label, plan_name):
+    """Return the JSON path for a named plan and degree programme."""
+    safe_degree = clean_plan_name(degree_label)
+    safe_name = clean_plan_name(plan_name)
+    return PLANS_FOLDER / f"{safe_degree}_{safe_name}.json"
+
+
+def legacy_plan_path(plan_name):
+    """Return the old non-degree-specific plan path for backwards compatibility."""
     safe_name = clean_plan_name(plan_name)
     return PLANS_FOLDER / f"{safe_name}.json"
 
 
-def list_saved_plans():
-    """List all saved plans without the .json suffix."""
-    return sorted(path.stem for path in PLANS_FOLDER.glob("*.json"))
+def active_plan_state_key(degree_label):
+    return f"{degree_label}_active_plan"
 
 
-def load_plan(plan_name):
-    """Load saved semester assignments for a named plan if it exists."""
-    path = plan_path(plan_name)
+def get_active_plan(degree_label):
+    return st.session_state.get(active_plan_state_key(degree_label), "default")
+
+
+def list_saved_plans(degree_label):
+    """List saved plan names for one degree programme.
+
+    For BSc, also include legacy unprefixed plans for backwards compatibility.
+    """
+    plan_names = set()
+    prefix = f"{clean_plan_name(degree_label)}_"
+
+    for path in PLANS_FOLDER.glob("*.json"):
+        stem = path.stem
+        if stem.startswith(prefix):
+            plan_names.add(stem.replace(prefix, "", 1))
+        elif degree_label == "BSc" and not stem.startswith("MSc_") and not stem.startswith("BSc_"):
+            plan_names.add(stem)
+
+    return sorted(plan_names)
+
+
+def load_plan(degree_label, plan_name):
+    """Load saved semester assignments for one degree-specific plan."""
+    path = plan_path(degree_label, plan_name)
+
+    if not path.exists() and degree_label == "BSc":
+        old_path = legacy_plan_path(plan_name)
+        if old_path.exists():
+            path = old_path
+
     if path.exists():
         with open(path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {}
 
 
-def save_plan(df, plan_name):
-    """Save semester assignment and selected module type, not full module descriptions."""
-    path = plan_path(plan_name)
+def save_plan(df, degree_label, plan_name):
+    """Save semester assignment and selected module type for one degree programme."""
+    path = plan_path(degree_label, plan_name)
     plan = {}
 
     for _, row in df.iterrows():
@@ -116,11 +150,16 @@ def save_plan(df, plan_name):
         json.dump(plan, f, indent=4, ensure_ascii=False)
 
 
-def delete_plan(plan_name):
-    """Delete a named plan if it exists."""
-    path = plan_path(plan_name)
+def delete_plan(degree_label, plan_name):
+    """Delete only the degree-specific plan file and legacy BSc file when appropriate."""
+    path = plan_path(degree_label, plan_name)
     if path.exists():
         path.unlink()
+
+    if degree_label == "BSc":
+        old_path = legacy_plan_path(plan_name)
+        if old_path.exists():
+            old_path.unlink()
 
 
 # -----------------------------------------------------------------------------
@@ -167,18 +206,22 @@ def clear_module_form_state(module_path):
 # -----------------------------------------------------------------------------
 
 @st.dialog("Overwrite existing plan?")
-def overwrite_plan_dialog(df, plan_name):
-    """Ask for confirmation before overwriting an existing plan."""
-    st.warning(f"The plan `{plan_name}` already exists. Saving will overwrite it.")
+def overwrite_plan_dialog(df, degree_label, plan_name):
+    """Ask for confirmation before overwriting an existing degree-specific plan."""
+    output_path = plan_path(degree_label, plan_name)
+    st.warning(
+        f"The {degree_label} plan `{plan_name}` already exists. "
+        f"Saving will overwrite `{output_path.name}`."
+    )
     st.write("This cannot be undone unless you have a backup or Git history.")
 
     col1, col2 = st.columns(2)
 
     with col1:
         if st.button("Overwrite", type="primary"):
-            save_plan(df, plan_name)
-            st.session_state["active_plan"] = plan_name
-            st.success(f"Plan saved as {plan_name}.json")
+            save_plan(df, degree_label, plan_name)
+            st.session_state[active_plan_state_key(degree_label)] = plan_name
+            st.success(f"Plan saved as {output_path.name}")
             st.rerun()
 
     with col2:
@@ -187,19 +230,19 @@ def overwrite_plan_dialog(df, plan_name):
 
 
 @st.dialog("Delete plan?")
-def delete_plan_dialog(plan_name):
-    """Ask for confirmation before deleting an existing plan."""
-    st.warning(f"The plan `{plan_name}` will be deleted.")
+def delete_plan_dialog(degree_label, plan_name):
+    """Ask for confirmation before deleting an existing degree-specific plan."""
+    st.warning(f"The {degree_label} plan `{plan_name}` will be deleted.")
     st.write("This cannot be undone unless you have a backup or Git history.")
 
     col1, col2 = st.columns(2)
 
     with col1:
         if st.button("Delete", type="primary"):
-            delete_plan(plan_name)
-            remaining_plans = list_saved_plans()
-            st.session_state["active_plan"] = remaining_plans[0] if remaining_plans else "default"
-            st.success(f"Deleted plan {plan_name}.")
+            delete_plan(degree_label, plan_name)
+            remaining_plans = list_saved_plans(degree_label)
+            st.session_state[active_plan_state_key(degree_label)] = remaining_plans[0] if remaining_plans else "default"
+            st.success(f"Deleted {degree_label} plan {plan_name}.")
             st.rerun()
 
     with col2:
@@ -263,9 +306,9 @@ def restore_module_dialog(module_path):
 # Module loading
 # -----------------------------------------------------------------------------
 
-def load_modules():
+def load_modules(degree_label):
     """Load all module JSON files and convert them into a scheduler table."""
-    plan = load_plan(st.session_state["active_plan"])
+    plan = load_plan(degree_label, get_active_plan(degree_label))
     rows = []
 
     if not MODULE_FOLDER.exists():
@@ -518,7 +561,7 @@ def module_matches(module, code=None, name_terms=None):
 def ensure_reference_bsc_plan():
     """Create a reference BSc plan if it does not yet exist."""
     reference_plan_name = "BSc_reference_plan"
-    path = plan_path(reference_plan_name)
+    path = plan_path("BSc", reference_plan_name)
 
     if path.exists() or not MODULE_FOLDER.exists():
         return
@@ -601,39 +644,15 @@ ensure_reference_bsc_plan()
 # Sidebar plan management
 # -----------------------------------------------------------------------------
 
-saved_plans = list_saved_plans()
+bsc_saved_plans = list_saved_plans("BSc")
+msc_saved_plans = list_saved_plans("MSc")
 
-if "active_plan" not in st.session_state:
-    st.session_state["active_plan"] = saved_plans[0] if saved_plans else "default"
+if active_plan_state_key("BSc") not in st.session_state:
+    st.session_state[active_plan_state_key("BSc")] = bsc_saved_plans[0] if bsc_saved_plans else "default"
+if active_plan_state_key("MSc") not in st.session_state:
+    st.session_state[active_plan_state_key("MSc")] = msc_saved_plans[0] if msc_saved_plans else "default"
 
-st.sidebar.header("Plans")
-
-plan_options = saved_plans.copy()
-if st.session_state["active_plan"] not in plan_options:
-    plan_options.append(st.session_state["active_plan"])
-if not plan_options:
-    plan_options = ["default"]
-plan_options = sorted(plan_options)
-
-selected_plan = st.sidebar.selectbox(
-    "Load plan",
-    options=plan_options,
-    index=plan_options.index(st.session_state["active_plan"]),
-)
-
-if selected_plan != st.session_state["active_plan"]:
-    st.session_state["active_plan"] = selected_plan
-    st.rerun()
-
-new_plan_name = st.sidebar.text_input("Save as", value=st.session_state["active_plan"])
-
-if saved_plans:
-    st.sidebar.divider()
-    st.sidebar.subheader("Delete plan")
-    plan_to_delete = st.sidebar.selectbox("Plan to delete", options=saved_plans)
-
-    if st.sidebar.button("Delete selected plan"):
-        delete_plan_dialog(plan_to_delete)
+# Plan controls are now rendered separately inside the BSc and MSc tabs.
 
 
 # -----------------------------------------------------------------------------
@@ -735,16 +754,17 @@ def render_plan_tab(
     save_button_key,
 ):
     """Render one independent plan tab for one degree programme."""
-    courses = load_modules()
+    courses = load_modules(degree_label)
     courses = courses[courses["code"].astype(str).str.startswith(code_prefix)].copy()
     courses = courses[["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]]
 
+    active_plan_key = active_plan_state_key(degree_label)
     if (
         working_key not in st.session_state
-        or st.session_state.get(working_plan_key) != st.session_state["active_plan"]
+        or st.session_state.get(working_plan_key) != st.session_state[active_plan_key]
     ):
         st.session_state[working_key] = courses.copy()
-        st.session_state[working_plan_key] = st.session_state["active_plan"]
+        st.session_state[working_plan_key] = st.session_state[active_plan_key]
     else:
         saved_choices = st.session_state[working_key][["code", "semester", "selected_type"]].copy()
         st.session_state[working_key] = courses.drop(columns=["semester", "selected_type"]).merge(
@@ -762,6 +782,47 @@ def render_plan_tab(
 
     working_courses = st.session_state[working_key].copy()
 
+    active_plan_key = active_plan_state_key(degree_label)
+    current_active_plan = st.session_state[active_plan_key]
+
+    saved_plans = list_saved_plans(degree_label)
+    if current_active_plan not in saved_plans:
+        saved_plans.append(current_active_plan)
+    if not saved_plans:
+        saved_plans = ["default"]
+    saved_plans = sorted(saved_plans)
+
+    col1, col2, col3 = st.columns([1, 1, 1])
+
+    with col1:
+        selected_plan = st.selectbox(
+            "Load plan",
+            options=saved_plans,
+            index=saved_plans.index(current_active_plan),
+            key=f"{degree_label}_selected_plan",
+        )
+        if selected_plan != current_active_plan:
+            st.session_state[active_plan_key] = selected_plan
+            st.rerun()
+
+    with col2:
+        new_plan_name = st.text_input(
+            "Save as",
+            value=current_active_plan,
+            key=f"{degree_label}_save_plan_name",
+        )
+
+    with col3:
+        plan_to_delete = st.selectbox(
+            "Plan to delete",
+            options=saved_plans,
+            key=f"{degree_label}_delete_plan_name",
+        )
+        if st.button("Delete selected plan", key=f"{degree_label}_delete_plan"):
+            delete_plan_dialog(degree_label, plan_to_delete)
+
+    st.caption("BSc and MSc plans are stored in separate files using the same displayed plan name.")
+    st.divider()
     st.info("The cells in the columns with the three lines and a pen symbol — Semester and Selected type — can be edited by clicking twice on them. Clicking the first time on a cell in these columns selects it, clicking the second time displayse the dropdown, from which a selection can be made. This way modules can be added, removed, ... to/from the plan.")
     left_col, right_col = st.columns(2)
 
@@ -803,6 +864,22 @@ def render_plan_tab(
     edited = pd.concat([edited_planned_courses, edited_unplanned_courses], ignore_index=True)
     edited = edited[["code", "course", "cp", "sws", "semester", "selected_type", "type", "responsible"]]
 
+    safe_name = clean_plan_name(new_plan_name)
+    plan_will_overwrite = safe_name != "" and plan_path(degree_label, safe_name).exists()
+
+    with col2:
+        if st.button("Save plan", key=save_button_key):
+            if safe_name == "":
+                st.error("Please enter a plan name.")
+            elif plan_will_overwrite:
+                overwrite_plan_dialog(edited, degree_label, safe_name)
+            else:
+                save_plan(edited, degree_label, safe_name)
+                st.session_state[active_plan_key] = safe_name
+                output_path = plan_path(degree_label, safe_name)
+                st.success(f"Plan saved as {output_path.name}")
+                st.rerun()
+
     old_state = st.session_state[working_key].sort_values("code").reset_index(drop=True)
     new_state = edited.sort_values("code").reset_index(drop=True)
 
@@ -810,21 +887,7 @@ def render_plan_tab(
         st.session_state[working_key] = edited.copy()
         st.rerun()
 
-    safe_name = clean_plan_name(new_plan_name)
-    plan_will_overwrite = safe_name != "" and plan_path(safe_name).exists()
-
-    if st.button("Save plan", key=save_button_key):
-        if safe_name == "":
-            st.error("Please enter a plan name.")
-        elif plan_will_overwrite:
-            overwrite_plan_dialog(edited, safe_name)
-        else:
-            save_plan(edited, safe_name)
-            st.session_state["active_plan"] = safe_name
-            st.success(f"Plan saved as {safe_name}.json")
-            st.rerun()
-
-    st.caption(f"Active plan: `{st.session_state['active_plan']}`")
+    st.caption(f"Active plan: `{st.session_state[active_plan_key]}`")
 
     assigned_modules = edited[edited["semester"].isin(semesters)]
     plan_total_cp_header = int(assigned_modules["cp"].sum())

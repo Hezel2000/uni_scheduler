@@ -1,0 +1,114 @@
+{
+    "MP1": {
+        "semester": "2",
+        "selected_type": "Pflichtmodul"
+    },
+    "MP2": {
+        "semester": "2",
+        "selected_type": "Pflichtmodul"
+    },
+    "MP3": {
+        "semester": "1",
+        "selected_type": "Pflichtmodul"
+    },
+    "MP4": {
+        "semester": "Unplanned",
+        "selected_type": "Pflichtmodul"
+    },
+    "MWp GeolPal1": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp GeolPal2": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp GeolPal3": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp GeolPal4": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp GeolPal5": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp GeolPal6": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp GeolPal7": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Gph1": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Gph2": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Gph3": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Gph4": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min1": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min2": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min3": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min4": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min5": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min6": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp Min7": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp WW1 DeepE": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp WW2 Quer": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp WW3 Bac": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp WW4 Gel": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp WW5 Nat": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "MWp WW6 Opt": {
+        "semester": "Unplanned",
+        "selected_type": "Wahlpflichtmodul"
+    }
+}

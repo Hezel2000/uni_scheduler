@@ -1,0 +1,82 @@
+{
+    "BP1": {
+        "semester": "1",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP2": {
+        "semester": "1",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP15a": {
+        "semester": "1",
+        "selected_type": "Importmodul"
+    },
+    "BP16a": {
+        "semester": "1",
+        "selected_type": "Importmodul"
+    },
+    "BP17": {
+        "semester": "1",
+        "selected_type": "Pflichtmodul"
+    },
+    "MWp GeolPal1": {
+        "semester": "2",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "BP15b": {
+        "semester": "2",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP16b": {
+        "semester": "2",
+        "selected_type": "Importmodul"
+    },
+    "BP6": {
+        "semester": "3",
+        "selected_type": "Pflichtmodul"
+    },
+    "BWp12": {
+        "semester": "3",
+        "selected_type": "Wahlpflichtmodul"
+    },
+    "BP8": {
+        "semester": "3",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP4": {
+        "semester": "3",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP13": {
+        "semester": "3",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP10": {
+        "semester": "4",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP11": {
+        "semester": "4",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP12": {
+        "semester": "4",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP7": {
+        "semester": "4",
+        "selected_type": "Pflichtmodul"
+    },
+    "MP1": {
+        "semester": "4",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP19": {
+        "semester": "5",
+        "selected_type": "Pflichtmodul"
+    },
+    "BP20": {
+        "semester": "6",
+        "selected_type": "Pflichtmodul"
+    }
+}
