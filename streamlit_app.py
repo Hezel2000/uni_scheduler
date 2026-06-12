@@ -566,7 +566,7 @@ def render_plan_tab(
 
     working_courses = st.session_state[working_key].copy()
 
-    st.info("The cells in the columns with the three lines and a pen symbol — Semester and Selected type — can be edited by clicking twice on them. Clicking the first time on a cell in these columns selects it, clicking the second time displayse the dropdown, from which a selection can be made.")
+    st.info("The cells in the columns with the three lines and a pen symbol — Semester and Selected type — can be edited by clicking twice on them. Clicking the first time on a cell in these columns selects it, clicking the second time displayse the dropdown, from which a selection can be made. This way modules can be added, removed, ... to/from the plan.")
     left_col, right_col = st.columns(2)
 
     column_config = {
